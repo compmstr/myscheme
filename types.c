@@ -44,6 +44,8 @@ object_type next_type(FILE *in, char c){
     }else{
       return PAIR;
     }
+  }else if(c == '"'){
+    return STRING;
   }else{
     fprintf(stderr, "Bad input. Unexpected '%c'\n", c);
     exit(1);
@@ -175,6 +177,64 @@ void write_character(object *obj){
     default:
       putchar(c);
   }
+}
+
+//Strings
+object *make_string(char *value){
+  object *obj;
+
+  obj = alloc_object();
+  obj->type = STRING;
+  obj->data.string.value = malloc(strlen(value) + 1);
+  if(obj->data.string.value == NULL){
+    fprintf(stderr, "out of memory\n");
+    exit(1);
+  }
+  strcpy(obj->data.string.value, value);
+  return obj;
+}
+
+char is_string(object *obj){
+  return obj->type == STRING;
+}
+
+object *read_string(FILE *in){
+  const int STRING_BUFFER_LEN = 1024;
+  char buffer[STRING_BUFFER_LEN];
+  int i = 0;
+  int c;
+  while((c = getc(in)) != '"'){
+    if(c == '\\'){
+      c = getc(in);
+      switch(c){
+        case 'n':
+          c = '\n';
+          break;
+        case '"':
+          c = '"';
+          break;
+        case '\\':
+          c = '\\';
+          break;
+        default:
+          fprintf(stderr, "Unsupported escape, \%c", c);
+          exit(1);
+      }
+    }
+    if(i < STRING_BUFFER_LEN - 1){
+      buffer[i] = c;
+      i++;
+    }else{
+      fprintf(stderr, "String to long, max is %d", STRING_BUFFER_LEN);
+      exit(1);
+    }
+  }
+  buffer[i] = '\0';
+  return make_string(buffer);
+}
+
+void write_string(object *obj){
+  printf("\"%s\"", obj->data.string.value);
 }
 
 //Empty list
@@ -314,6 +374,9 @@ void init_types(void){
 
   read_funcs[CHARACTER] = read_character;
   write_funcs[CHARACTER] = write_character;
+
+  read_funcs[STRING] = read_string;
+  write_funcs[STRING] = write_string;
 
   read_funcs[BOOLEAN] = read_boolean;
   write_funcs[BOOLEAN] = write_boolean;

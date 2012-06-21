@@ -6,7 +6,7 @@
 #include <ctype.h>
 
 typedef enum {FIXNUM, CHARACTER, BOOLEAN, EMPTY_LIST, 
-              PAIR, NUM_TYPES} object_type;
+              STRING, PAIR, NUM_TYPES} object_type;
 
 typedef struct object {
   object_type type;
@@ -17,6 +17,9 @@ typedef struct object {
     struct {
       char value;
     }character;
+    struct {
+      char *value;
+    }string;
     struct {
       long value;
     }fixnum;
@@ -35,7 +38,15 @@ object *car(object *obj);
 object *cdr(object *obj);
 object *cons(object *car, object *cdr);
 
+/**
+ *List of read functions for each type
+ * these are initialized in init_types
+ */
 object * (*read_funcs[NUM_TYPES])(FILE *in);
+/**
+ *List of write functions for each type
+ * these are initialized in init_types
+ */
 void (*write_funcs[NUM_TYPES])(object *obj);
 
 /*Used to determine what type is coming next in the stream
