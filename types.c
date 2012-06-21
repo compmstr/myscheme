@@ -1,6 +1,8 @@
 #include "types.h"
 #include "reader.h"
 
+const int STRING_BUFFER_LEN = 1024;
+
 object *alloc_object(void){
   object *obj;
 
@@ -10,6 +12,11 @@ object *alloc_object(void){
     exit(1);
   }
   return obj;
+}
+
+char is_symbol_start(int c){
+  return isalpha(c) || c == '*' || c == '/' || c == '>' ||
+          c == '<'  || c == '=' || c == '?' || c == '!';
 }
 
 /*Used to determine what type is coming next in the stream
@@ -46,6 +53,13 @@ object_type next_type(FILE *in, char c){
     }
   }else if(c == '"'){
     return STRING;
+  /*if this is the start of a symbol*/
+  }else if(is_symbol_start(c) ||
+    /*or +/- by themselves*/
+    ((c == '+' || c == '-') && is_delimiter(peek(in)))){
+      //put this first character back
+      ungetc(c, in);
+      return SYMBOL;
   }else{
     fprintf(stderr, "Bad input. Unexpected '%c'\n", c);
     exit(1);
@@ -199,7 +213,6 @@ char is_string(object *obj){
 }
 
 object *read_string(FILE *in){
-  const int STRING_BUFFER_LEN = 1024;
   char buffer[STRING_BUFFER_LEN];
   int i = 0;
   int c;
@@ -353,6 +366,68 @@ void set_cdr(object *obj, object *value){
   obj->data.pair.cdr = value;
 }
 
+//Symbols
+char is_sumbol(object *obj){
+  return obj->type == SYMBOL;
+}
+
+object *make_symbol(char *value){
+  object *obj;
+  /*temp element*/
+  object *element;
+
+  /*search to see if the symbol is defined*/
+  element = symbol_table;
+  while(element != empty_list){
+    if(strcmp(car(element)->data.symbol.value, value) == 0){
+      return car(element);
+    }
+    element = cdr(element);
+  }
+
+  /*create the symbol and add it to the symbol table*/
+  obj = alloc_object();
+  obj->type = SYMBOL;
+  obj->data.symbol.value = malloc(strlen(value) + 1);
+  if(obj->data.symbol.value == NULL){
+    fprintf(stderr, "out of memory\n");
+    exit(1);
+  }
+  strcpy(obj->data.symbol.value, value);
+  symbol_table = cons(obj, symbol_table);
+  return obj;
+}
+
+object *read_symbol(FILE *in){
+  int i, c;
+  char buffer[STRING_BUFFER_LEN];
+  i = 0;
+  c = getc(in);
+  while(is_symbol_start(c) || isdigit(c) ||
+        c == '+' || c == '-'){
+    if(i < STRING_BUFFER_LEN - 1){
+      buffer[i] = c;
+      i++;
+    }else{
+      fprintf(stderr, "String to long, max is %d", STRING_BUFFER_LEN);
+      exit(1);
+    }
+    c = getc(in);
+  }
+  if(is_delimiter(c)){
+    buffer[i] = '\0';
+    ungetc(c, in);
+    return make_symbol(buffer);
+  }else{
+    fprintf(stderr, "Symbol not followed by delimiter!\n");
+    exit(1);
+  }
+}
+
+void write_symbol(object *obj){
+  printf("%s", obj->data.symbol.value);
+}
+
 //Initialization
 void init_types(void){
   printf("Initializing types...\n");
@@ -366,6 +441,8 @@ void init_types(void){
 
   empty_list = alloc_object();
   empty_list->type = EMPTY_LIST;
+
+  symbol_table = empty_list;
 
   //set up reader function pointers
   //set up writer function pointers
@@ -386,4 +463,7 @@ void init_types(void){
 
   read_funcs[PAIR] = read_pair;
   write_funcs[PAIR] = write_pair;
+
+  read_funcs[SYMBOL] = read_symbol;
+  write_funcs[SYMBOL] = write_symbol;
 }

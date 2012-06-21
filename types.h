@@ -6,7 +6,7 @@
 #include <ctype.h>
 
 typedef enum {FIXNUM, CHARACTER, BOOLEAN, EMPTY_LIST, 
-              STRING, PAIR, NUM_TYPES} object_type;
+              STRING, SYMBOL, PAIR, NUM_TYPES} object_type;
 
 typedef struct object {
   object_type type;
@@ -27,12 +27,16 @@ typedef struct object {
       struct object *car;
       struct object *cdr;
     }pair;
+    struct {
+      char *value;
+    }symbol;
   } data;
 } object;
 
 object *true;
 object *false;
 object *empty_list;
+object *symbol_table;
 
 object *car(object *obj);
 object *cdr(object *obj);

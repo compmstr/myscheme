@@ -1,6 +1,8 @@
 .PHONY: clean
 CC=gcc
-CFLAGS=-ggdb
+#Don't really need 64 bit for this thing
+CFLAGS=-m32 -ggdb
+#CFLAGS=-m32
 LIBS=
 
 myscheme: myscheme.c types.h reader.o types.o eval.o writer.o
