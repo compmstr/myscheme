@@ -447,7 +447,24 @@ void write_primitive_proc(object *obj){
 }
 
 /*compound (custom) procedures)*/
-char is_compound_proc(object *);
+char is_compound_proc(object *obj){
+  return(obj->type == COMPOUND_PROC);
+}
+
+object *make_compound_proc(object *params, object *body, object *env){
+  object *obj;
+
+  obj = alloc_object();
+  if(obj == NULL){
+    fprintf(stderr, "out of memory\n");
+    exit(1);
+  }
+  obj->type = COMPOUND_PROC;
+  obj->data.compound_proc.params = params;
+  obj->data.compound_proc.body = body;
+  obj->data.compound_proc.env = env;
+  return obj;
+}
 
 //Initialization
 void init_types(void){

@@ -35,7 +35,7 @@ typedef struct object {
       struct object *(*fn)(struct object *args);
     }primitive_proc;
     struct{
-      struct object *parameters;
+      struct object *params;
       struct object *body;
       struct object*env;
     }compound_proc;
@@ -94,5 +94,6 @@ object *make_primitive_proc(object *(*fn)(struct object *arguments));
 object *make_fixnum(const long);
 object *make_string(const char *);
 object *make_character(const char);
+object *make_compound_proc(object *params, object *body, object *env);
 
 #endif

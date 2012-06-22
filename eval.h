@@ -7,6 +7,7 @@
 #define cadr(obj) car(cdr(obj))
 #define cddr(obj) cdr(cdr(obj))
 #define cdar(obj) cdr(car(obj))
+#define caadr(obj) car(car(cdr(obj)))
 #define caddr(obj) car(cdr(cdr(obj)))
 #define cadddr(obj) car(cdr(cdr(cdr(obj))))
 
