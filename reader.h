@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"
+#include "eval.h"
 
 object *read(FILE *in);
 

@@ -99,7 +99,7 @@ object *read_boolean(FILE *in){
 }
 
 //Fixnum
-object *make_fixnum(long value){
+object *make_fixnum(const long value){
   object *obj;
 
   obj = alloc_object();
@@ -139,7 +139,7 @@ void write_fixnum(object *obj){
 }
 
 //Character
-object *make_character(char value){
+object *make_character(const char value){
   object *obj;
 
   obj = alloc_object();
@@ -194,7 +194,7 @@ void write_character(object *obj){
 }
 
 //Strings
-object *make_string(char *value){
+object *make_string(const char *value){
   object *obj;
 
   obj = alloc_object();
@@ -367,11 +367,11 @@ void set_cdr(object *obj, object *value){
 }
 
 //Symbols
-char is_sumbol(object *obj){
+char is_symbol(object *obj){
   return obj->type == SYMBOL;
 }
 
-object *make_symbol(char *value){
+object *make_symbol(const char *value){
   object *obj;
   /*temp element*/
   object *element;
@@ -428,6 +428,24 @@ void write_symbol(object *obj){
   printf("%s", obj->data.symbol.value);
 }
 
+/*Primitive (builtin) procedures */
+object *make_primitive_proc(object *(*fn)(struct object *arguments)){
+  object *obj;
+
+  obj = alloc_object();
+  obj->type = PRIMITIVE_PROC;
+  obj->data.primitive_proc.fn = fn;
+  return obj;
+}
+
+char is_primitive_proc(object *obj){
+  return obj->type == PRIMITIVE_PROC;
+}
+
+void write_primitive_proc(object *obj){
+  printf("#<procedure>");
+}
+
 //Initialization
 void init_types(void){
   printf("Initializing types...\n");
@@ -466,4 +484,11 @@ void init_types(void){
 
   read_funcs[SYMBOL] = read_symbol;
   write_funcs[SYMBOL] = write_symbol;
+
+  read_funcs[PRIMITIVE_PROC] = 0x0;
+  write_funcs[PRIMITIVE_PROC] = write_primitive_proc;
+}
+
+char is_empty_list(object *obj){
+  return obj == empty_list;
 }

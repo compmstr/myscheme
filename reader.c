@@ -3,12 +3,21 @@
 object *read(FILE *in){
   int c;
   object_type type;
+  char quoted = 0;
 
   eat_whitespace(in);
   c = getc(in);
+  if(c == '\''){
+    quoted = 1;
+    c = getc(in);
+  }
   type = next_type(in, c);
   if(read_funcs[type] != 0){
-    (*read_funcs[type])(in);
+    if(quoted == 1){
+      return cons(quote_symbol, cons((*read_funcs[type])(in), empty_list));
+    }else{
+      return (*read_funcs[type])(in);
+    }
   }else{
     fprintf(stderr, "Unsupported read type\n");
     exit(1);

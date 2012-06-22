@@ -6,7 +6,7 @@
 #include <ctype.h>
 
 typedef enum {FIXNUM, CHARACTER, BOOLEAN, EMPTY_LIST, 
-              STRING, SYMBOL, PAIR, NUM_TYPES} object_type;
+              STRING, SYMBOL, PAIR, PRIMITIVE_PROC, NUM_TYPES} object_type;
 
 typedef struct object {
   object_type type;
@@ -30,6 +30,9 @@ typedef struct object {
     struct {
       char *value;
     }symbol;
+    struct {
+      struct object *(*fn)(struct object *args);
+    }primitive_proc;
   } data;
 } object;
 
@@ -41,6 +44,9 @@ object *symbol_table;
 object *car(object *obj);
 object *cdr(object *obj);
 object *cons(object *car, object *cdr);
+
+char is_false(object *obj);
+char is_true(object *obj);
 
 /**
  *List of read functions for each type
@@ -59,6 +65,15 @@ void (*write_funcs[NUM_TYPES])(object *obj);
  *  c - the first non-whitespace character to look at*/
 object_type next_type(FILE *in, char c);
 
+char is_quoted(object *expression);
+char is_empty_list(object *obj);
+object *quoted_contents(object *exp);
+char is_self_evaluating(object *exp);
+
 void init_types(void);
+
+object *make_symbol(const char *);
+object *make_primitive_proc(object *(*fn)(struct object *arguments));
+object *make_fixnum(const long);
 
 #endif

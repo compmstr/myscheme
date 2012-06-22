@@ -8,9 +8,10 @@ int main(int argc, char **argv){
   printf("Welcome to my scheme.\nUse ctrl-c to exit.\n");
 
   init_types();
+  init_environment();
   while(1){
     printf("> ");
-    write(eval(read(stdin)));
+    write(eval(read(stdin), global_environment));
     printf("\n");
   }
 
