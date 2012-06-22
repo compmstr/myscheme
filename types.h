@@ -6,7 +6,8 @@
 #include <ctype.h>
 
 typedef enum {FIXNUM, CHARACTER, BOOLEAN, EMPTY_LIST, 
-              STRING, SYMBOL, PAIR, PRIMITIVE_PROC, NUM_TYPES} object_type;
+              STRING, SYMBOL, PAIR, PRIMITIVE_PROC,
+              COMPOUND_PROC, NUM_TYPES} object_type;
 
 typedef struct object {
   object_type type;
@@ -33,6 +34,11 @@ typedef struct object {
     struct {
       struct object *(*fn)(struct object *args);
     }primitive_proc;
+    struct{
+      struct object *parameters;
+      struct object *body;
+      struct object*env;
+    }compound_proc;
   } data;
 } object;
 
@@ -70,10 +76,23 @@ char is_empty_list(object *obj);
 object *quoted_contents(object *exp);
 char is_self_evaluating(object *exp);
 
+void set_cdr(object *obj, object *value);
+void set_car(object *obj, object *value);
+
+char is_boolean(object *);
+char is_symbol(object *);
+char is_fixnum(object *);
+char is_character(object *);
+char is_pair(object *);
+char is_primitive_proc(object *);
+char is_compound_proc(object *);
+
 void init_types(void);
 
 object *make_symbol(const char *);
 object *make_primitive_proc(object *(*fn)(struct object *arguments));
 object *make_fixnum(const long);
+object *make_string(const char *);
+object *make_character(const char);
 
 #endif

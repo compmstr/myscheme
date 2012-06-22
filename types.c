@@ -446,6 +446,9 @@ void write_primitive_proc(object *obj){
   printf("#<procedure>");
 }
 
+/*compound (custom) procedures)*/
+char is_compound_proc(object *);
+
 //Initialization
 void init_types(void){
   printf("Initializing types...\n");

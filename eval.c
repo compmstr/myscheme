@@ -322,32 +322,109 @@ object *num_equal_proc(object *args){
   return true;
 }
 
+object *less_than_proc(object *args){
+  long val = (car(args))->data.fixnum.value;
+  args = cdr(args);
+
+  while(!is_empty_list(args)){
+    if(val > (car(args))->data.fixnum.value){
+      return false;
+    }
+    val = (car (args))->data.fixnum.value;
+    args = cdr(args);
+  }
+
+  return true;
+}
+
+object *greater_than_proc(object *args){
+  long val = (car(args))->data.fixnum.value;
+  args = cdr(args);
+
+  while(!is_empty_list(args)){
+    if(val < (car(args))->data.fixnum.value){
+      return false;
+    }
+    val = (car (args))->data.fixnum.value;
+    args = cdr(args);
+  }
+
+  return true;
+}
+
+object *nullp_proc(object *args){
+  return is_empty_list(car(args)) ? true : false;
+}
+
+object *booleanp_proc(object *args){
+  return is_boolean(car(args)) ? true : false;
+}
+object *symbolp_proc(object *args){
+  return is_symbol(car(args)) ? true : false;
+}
+object *integerp_proc(object *args){
+  return is_fixnum(car(args)) ? true : false;
+}
+object *characterp_proc(object *args){
+  return is_character(car(args)) ? true : false;
+}
+object *pairp_proc(object *args){
+  return is_pair(car(args)) ? true : false;
+}
+object *procedurep_proc(object *args){
+  return is_primitive_proc(car(args)) ? true : false;
+}
+
+object *cons_proc(object *args){
+  return cons(car(args), cadr(args));
+}
+
+object *car_proc(object *args){
+  return caar(args);
+}
+object *cdr_proc(object *args){
+  return cadr(args);
+}
+
+object *list_proc(object *args){
+  return cons(car(args), cdr(args));
+}
+
+object *set_car_proc(object *args){
+  set_car(car(args), cadr(args));
+  return car(args);
+}
+
+object *set_cdr_proc(object *args){
+  set_cdr(car(args), cadr(args));
+  return car(args);
+}
+
+object *char_to_int_proc(object *args){
+  object *obj = make_fixnum((long)(car(args))->data.character.value);
+}
+object *int_to_char_proc(object *args){
+  object *obj = make_character((char)(car(args))->data.fixnum.value);
+}
+
+object *int_to_string_proc(object *args){
+  char buffer[64];
+  sprintf(buffer, "%d", (car(args))->data.fixnum.value);
+  object *obj = make_string(buffer);
+}
+
+object *string_to_int_proc(object *args){
+  return make_fixnum(atol((car(args))->data.string.value));
+}
+
+object *string_to_symbol_proc(object *args){
+  return make_symbol((car(args))->data.string.value);
+}
+object *symbol_to_string_proc(object *args){
+  return make_string((car(args))->data.symbol.value);
+}
+
 /*TODO: add:
-  Type predicates:
-    null?
-    boolean?
-    symbol?
-    integer?
-    char?
-    pair?
-    procedure?
-  Type conversions:
-    char->integer
-    integer->char
-    number->string
-    string->number
-    symbol->string
-    string->symbol
-  Math:
-    >
-    <
-  List ops:
-    cons
-    car
-    cdr
-    set-car!
-    set-cdr!
-    list
   Equality testing (polymorphic)
     eq?
 */
@@ -380,6 +457,69 @@ void init_environment(void){
                   global_environment);
   define_variable(make_symbol("="),
                   make_primitive_proc(num_equal_proc),
+                  global_environment);
+  define_variable(make_symbol("<"),
+                  make_primitive_proc(less_than_proc),
+                  global_environment);
+  define_variable(make_symbol(">"),
+                  make_primitive_proc(greater_than_proc),
+                  global_environment);
+  define_variable(make_symbol("null?"),
+                  make_primitive_proc(nullp_proc),
+                  global_environment);
+  define_variable(make_symbol("boolean?"),
+                  make_primitive_proc(booleanp_proc),
+                  global_environment);
+  define_variable(make_symbol("symbol?"),
+                  make_primitive_proc(symbolp_proc),
+                  global_environment);
+  define_variable(make_symbol("integer?"),
+                  make_primitive_proc(integerp_proc),
+                  global_environment);
+  define_variable(make_symbol("char?"),
+                  make_primitive_proc(characterp_proc),
+                  global_environment);
+  define_variable(make_symbol("pair?"),
+                  make_primitive_proc(pairp_proc),
+                  global_environment);
+  define_variable(make_symbol("procedure?"),
+                  make_primitive_proc(procedurep_proc),
+                  global_environment);
+  define_variable(make_symbol("cons"),
+                  make_primitive_proc(cons_proc),
+                  global_environment);
+  define_variable(make_symbol("car"),
+                  make_primitive_proc(car_proc),
+                  global_environment);
+  define_variable(make_symbol("cdr"),
+                  make_primitive_proc(cdr_proc),
+                  global_environment);
+  define_variable(make_symbol("list"),
+                  make_primitive_proc(list_proc),
+                  global_environment);
+  define_variable(make_symbol("set-car!"),
+                  make_primitive_proc(set_car_proc),
+                  global_environment);
+  define_variable(make_symbol("set-cdr!"),
+                  make_primitive_proc(set_cdr_proc),
+                  global_environment);
+  define_variable(make_symbol("char->int"),
+                  make_primitive_proc(char_to_int_proc),
+                  global_environment);
+  define_variable(make_symbol("int->char"),
+                  make_primitive_proc(int_to_char_proc),
+                  global_environment);
+  define_variable(make_symbol("int->string"),
+                  make_primitive_proc(int_to_string_proc),
+                  global_environment);
+  define_variable(make_symbol("string->int"),
+                  make_primitive_proc(string_to_int_proc),
+                  global_environment);
+  define_variable(make_symbol("string->symbol"),
+                  make_primitive_proc(string_to_symbol_proc),
+                  global_environment);
+  define_variable(make_symbol("symbol->string"),
+                  make_primitive_proc(symbol_to_string_proc),
                   global_environment);
 }
 

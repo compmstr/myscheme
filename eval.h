@@ -14,6 +14,7 @@ object *quote_symbol;
 object *define_symbol;
 object *set_symbol;
 object *if_symbol;
+object *lambda_symbol;
 
 object *empty_environment;
 object *global_environment;
