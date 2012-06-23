@@ -466,6 +466,10 @@ object *make_compound_proc(object *params, object *body, object *env){
   return obj;
 }
 
+void write_compound_proc(object *obj){
+  printf("#<compound procedure>");
+}
+
 //Initialization
 void init_types(void){
   printf("Initializing types...\n");
@@ -507,6 +511,9 @@ void init_types(void){
 
   read_funcs[PRIMITIVE_PROC] = 0x0;
   write_funcs[PRIMITIVE_PROC] = write_primitive_proc;
+
+  read_funcs[COMPOUND_PROC] = 0x0;
+  write_funcs[COMPOUND_PROC] = write_compound_proc;
 }
 
 char is_empty_list(object *obj){

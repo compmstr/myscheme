@@ -165,6 +165,20 @@ object *lambda_body(object *exp){
   return cddr(exp);
 }
 
+/*Begin symbol, like progn*/
+object *make_begin(object *exp){
+  return cons(begin_symbol, exp);
+}
+
+char is_begin(object *exp){
+  return is_tagged_list(exp, begin_symbol);
+}
+
+object *begin_actions(object *exp){
+  return cdr(exp);
+}
+
+
 char is_last_exp(object *seq){
   return is_empty_list(cdr(seq));
 }
@@ -272,6 +286,14 @@ tailcall:
     return make_compound_proc(lambda_params(exp),
                               lambda_body(exp),
                               env);
+  }else if(is_begin(exp)){
+    exp = begin_actions(exp);
+    while(!is_last_exp(exp)){
+      eval(first_exp(exp), env);
+      exp = rest_exps(exp);
+    }
+    exp = first_exp(exp);
+    goto tailcall;
   }else if(is_if(exp)){
     exp = is_true(eval(if_predicate(exp), env)) ?
         if_then(exp) :
@@ -288,12 +310,7 @@ tailcall:
               procedure->data.compound_proc.params,
               args,
               procedure->data.compound_proc.env);
-      exp = procedure->data.compound_proc.body;
-      while(!is_last_exp(exp)){
-        eval(first_exp(exp), env);
-        exp = rest_exps(exp);
-      }
-      exp = first_exp(exp);
+      exp = make_begin(procedure->data.compound_proc.body);
       goto tailcall;
     }else{
       fprintf(stderr, "Unknown procedure type\n");
@@ -483,6 +500,10 @@ object *symbol_to_string_proc(object *args){
   return make_string((car(args))->data.symbol.value);
 }
 
+object *global_env_proc(object *args){
+  return global_environment;
+}
+
 /*TODO: add:
   Equality testing (polymorphic)
     eq?
@@ -494,6 +515,7 @@ void init_environment(void){
   set_symbol = make_symbol("set!");
   if_symbol = make_symbol("if");
   lambda_symbol = make_symbol("lambda");
+  begin_symbol = make_symbol("begin");
 
   empty_environment = empty_list;
 
@@ -580,6 +602,9 @@ void init_environment(void){
                   global_environment);
   define_variable(make_symbol("symbol->string"),
                   make_primitive_proc(symbol_to_string_proc),
+                  global_environment);
+  define_variable(make_symbol("global-env"), 
+                  make_primitive_proc(global_env_proc),
                   global_environment);
 }
 
