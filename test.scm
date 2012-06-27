@@ -9,3 +9,11 @@
 
 "(factorial 5):"
 (factorial 5)
+
+(define (range-recur cur target)
+  (if (= cur target)
+    (list target)
+    (cons cur (range-recur (+ cur 1) target))))
+
+(define (range x)
+  (range-recur 0 x))
