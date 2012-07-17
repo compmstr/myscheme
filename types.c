@@ -1,12 +1,14 @@
 #include "types.h"
 #include "reader.h"
+#include <gc/gc.h>
 
 const int STRING_BUFFER_LEN = 1024;
 
 object *alloc_object(void){
   object *obj;
 
-  obj = malloc(sizeof(object));
+  /*obj = malloc(sizeof(object));*/
+  obj = GC_MALLOC(sizeof(object));
   if(obj == NULL){
     fprintf(stderr, "out of memory\n");
     exit(1);
@@ -199,7 +201,8 @@ object *make_string(const char *value){
 
   obj = alloc_object();
   obj->type = STRING;
-  obj->data.string.value = malloc(strlen(value) + 1);
+  /*obj->data.string.value = malloc(strlen(value) + 1);*/
+  obj->data.string.value = GC_MALLOC(strlen(value) + 1);
   if(obj->data.string.value == NULL){
     fprintf(stderr, "out of memory\n");
     exit(1);
@@ -276,7 +279,7 @@ object *read_pair(FILE *in){
   }
   ungetc(c, in);
 
-  car_obj = read(in);
+  car_obj = scheme_read(in);
 
   eat_whitespace(in);
 
@@ -287,7 +290,7 @@ object *read_pair(FILE *in){
       fprintf(stderr, "dot not followed by delimiter");
       exit(1);
     }
-    cdr_obj = read(in);
+    cdr_obj = scheme_read(in);
     eat_whitespace(in);
     c = getc(in);
     if(c != ')'){
@@ -388,7 +391,8 @@ object *make_symbol(const char *value){
   /*create the symbol and add it to the symbol table*/
   obj = alloc_object();
   obj->type = SYMBOL;
-  obj->data.symbol.value = malloc(strlen(value) + 1);
+  obj->data.symbol.value = GC_MALLOC(strlen(value) + 1);
+  /*obj->data.symbol.value = malloc(strlen(value) + 1);*/
   if(obj->data.symbol.value == NULL){
     fprintf(stderr, "out of memory\n");
     exit(1);

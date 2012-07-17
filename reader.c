@@ -1,6 +1,6 @@
 #include "reader.h"
 
-object *read(FILE *in){
+object *scheme_read(FILE *in){
   int c;
   object_type type;
   char quoted = 0;

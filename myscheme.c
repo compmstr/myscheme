@@ -11,7 +11,7 @@ int main(int argc, char **argv){
   init_environment();
   while(1){
     printf("> ");
-    write(eval(read(stdin), global_environment));
+    write(eval(scheme_read(stdin), global_environment));
     printf("\n");
   }
 

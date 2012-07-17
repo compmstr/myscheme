@@ -1,9 +1,10 @@
 .PHONY: clean
 CC=gcc
 #Don't really need 64 bit for this thing
-CFLAGS=-m32 -ggdb
+#CFLAGS=-m32 -ggdb
+CFLAGS=-ggdb
 #CFLAGS=-m32
-LIBS=
+LIBS=-lgc
 
 myscheme: myscheme.c types.h reader.o types.o eval.o writer.o
 	$(CC) $(CFLAGS) $(LIBS) -Wall -ansi -o myscheme reader.o types.o writer.o eval.o myscheme.c

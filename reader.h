@@ -7,7 +7,7 @@
 #include "types.h"
 #include "eval.h"
 
-object *read(FILE *in);
+object *scheme_read(FILE *in);
 
 char is_delimiter(int c);
 /*Looks at the next byte in file, without advancing pointer*/
