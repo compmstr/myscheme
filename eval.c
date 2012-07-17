@@ -235,6 +235,10 @@ object *eval_definition(object *exp, object *env){
   return true;
 }
 
+object *make_proc_call(object *operator, object *operands){
+  return cons(operator, operands);
+}
+
 char is_proc_call(object *exp){
   return is_pair(exp);
 }
@@ -267,6 +271,55 @@ object *list_of_values(object *exps, object *env){
   }
 }
 
+char is_let(object *exp){
+  return is_tagged_list(exp, let_symbol);
+}
+
+object *let_bindings(object *exp){
+  return cadr(exp);
+}
+
+object *let_body(object *exp){
+  return cddr(exp);
+}
+
+object *binding_parameters(object *binding){
+  return car(binding);
+}
+
+object *binding_argument(object *binding){
+  return cadr(binding);
+}
+
+object *biding_parameters(object *bindings){
+  return is_empty_list(bindings) ?
+            empty_list :
+            cons(binding_parameters(car(bindings)),
+              binding_parameters(cdr(bindings)));
+}
+
+object *binding_arguments(object *bindings){
+  return is_empty_list(bindings) ?
+          empty_list :
+          cons(binding_arguments(car(bindings)),
+              binding_arguments(cdr(bindings)));
+}
+
+object *let_parameters(object *exp){
+  return binding_parameters(let_bindings(exp));
+}
+
+object *let_arguments(object *exp){
+  return binding_arguments(let_bindings(exp));
+}
+
+object *let_to_proc_call(object *exp){
+  return make_proc_call(
+          make_lambda(let_parameters(exp),
+                      let_body(exp)),
+          let_arguments(exp));
+}
+
 object *eval(object *exp, object *env){
   object *procedure;
   object *args;
@@ -293,6 +346,9 @@ tailcall:
       exp = rest_exps(exp);
     }
     exp = first_exp(exp);
+    goto tailcall;
+  }else if(is_let(exp)){
+    exp = let_to_proc_call(exp);
     goto tailcall;
   }else if(is_if(exp)){
     exp = is_true(eval(if_predicate(exp), env)) ?
@@ -516,6 +572,7 @@ void init_environment(void){
   if_symbol = make_symbol("if");
   lambda_symbol = make_symbol("lambda");
   begin_symbol = make_symbol("begin");
+  let_symbol = make_symbol("let");
 
   empty_environment = empty_list;
 
