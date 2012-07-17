@@ -21,7 +21,22 @@
     (list target)
     (cons cur (range-recur (+ cur 1) target))))
 
-(define (range x)
+(define (range-r x)
   (range-recur 0 x))
+
+(range-r 10)
+
+(define (dec x)
+  (- x 1))
+(define (inc x)
+  (+ x 1))
+
+(define (range end)
+  (let ((cur (dec end))
+        (accum '()))
+    (while (>= cur 0)
+      (set! accum (cons cur accum))
+      (set! cur (dec cur)))
+    accum))
 
 (range 10)

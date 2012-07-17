@@ -223,14 +223,14 @@ object *definition_value(object *exp){
 
 object *eval_assignment(object *exp, object *env){
   set_variable_value(assignment_variable(exp),
-                      eval(assignment_value(exp), env),
+                      scheme_eval(assignment_value(exp), env),
                       env);
   return true;
 }
 
 object *eval_definition(object *exp, object *env){
   define_variable(definition_variable(exp),
-                      eval(definition_value(exp), env),
+                      scheme_eval(definition_value(exp), env),
                       env);
   return true;
 }
@@ -266,7 +266,7 @@ object *list_of_values(object *exps, object *env){
   if(is_no_proc_args(exps)){
     return empty_list;
   }else{
-    return cons(eval(first_proc_arg(exps), env),
+    return cons(scheme_eval(first_proc_arg(exps), env),
                 list_of_values(rest_proc_args(exps), env));
   }
 }
@@ -320,7 +320,37 @@ object *let_to_proc_call(object *exp){
           let_arguments(exp));
 }
 
-object *eval(object *exp, object *env){
+/**
+ *  while loop stuff
+ */
+char is_while(object *exp){
+  return is_tagged_list(exp, while_symbol);
+}
+
+object* while_predicate(object *exp){
+  return cadr(exp);
+}
+object* while_body(object *exp){
+  return cddr(exp);
+}
+
+object* do_while(object *exp, object *env){
+  object *predicate = while_predicate(exp);
+  object *body = while_body(exp);
+
+  object* result = empty_list;
+  while(is_true(scheme_eval(predicate, env))){
+    object* exps = body;
+    while(!is_last_exp(exps)){
+      scheme_eval(first_exp(exps), env);
+      exps = cdr(exps);
+    }
+    result = scheme_eval(first_exp(exps), env);
+  }
+  return result;
+}
+
+object *scheme_eval(object *exp, object *env){
   object *procedure;
   object *args;
 /*goto target for tail calls*/
@@ -335,6 +365,8 @@ tailcall:
     return eval_assignment(exp, env);
   }else if(is_definition(exp)){
     return eval_definition(exp, env);
+  }else if(is_while(exp)){
+    return do_while(exp, env);
   }else if(is_lambda(exp)){
     return make_compound_proc(lambda_params(exp),
                               lambda_body(exp),
@@ -342,7 +374,7 @@ tailcall:
   }else if(is_begin(exp)){
     exp = begin_actions(exp);
     while(!is_last_exp(exp)){
-      eval(first_exp(exp), env);
+      scheme_eval(first_exp(exp), env);
       exp = rest_exps(exp);
     }
     exp = first_exp(exp);
@@ -351,13 +383,13 @@ tailcall:
     exp = let_to_proc_call(exp);
     goto tailcall;
   }else if(is_if(exp)){
-    exp = is_true(eval(if_predicate(exp), env)) ?
+    exp = is_true(scheme_eval(if_predicate(exp), env)) ?
         if_then(exp) :
         if_else(exp);
     /*top of this function, with new exp to eval*/
     goto tailcall;
   }else if(is_proc_call(exp)){
-    procedure = eval(proc_symbol(exp), env);
+    procedure = scheme_eval(proc_symbol(exp), env);
     args = list_of_values(proc_args(exp), env);
     if(is_primitive_proc(procedure)){
       return (procedure->data.primitive_proc.fn)(args);
@@ -573,6 +605,7 @@ void init_environment(void){
   lambda_symbol = make_symbol("lambda");
   begin_symbol = make_symbol("begin");
   let_symbol = make_symbol("let");
+  while_symbol = make_symbol("while");
 
   empty_environment = empty_list;
 

@@ -18,11 +18,12 @@ object *if_symbol;
 object *lambda_symbol;
 object *begin_symbol;
 object *let_symbol;
+object *while_symbol;
 
 object *empty_environment;
 object *global_environment;
 
-object *eval(object *exp, object *env);
+object *scheme_eval(object *exp, object *env);
 void init_environment(void);
 
 #endif
