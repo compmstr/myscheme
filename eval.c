@@ -291,7 +291,7 @@ object *binding_argument(object *binding){
   return cadr(binding);
 }
 
-object *biding_parameters(object *bindings){
+object *bindings_parameters(object *bindings){
   return is_empty_list(bindings) ?
             empty_list :
             cons(binding_parameters(car(bindings)),
@@ -597,6 +597,10 @@ object *global_env_proc(object *args){
     eq?
 */
 
+#define builtin_proc(symbol,proc) define_variable(make_symbol(#symbol),	\
+																									make_primitive_proc(proc), \
+																									global_environment)
+
 void init_environment(void){
   quote_symbol = make_symbol("quote");
   define_symbol = make_symbol("define");
@@ -612,89 +616,33 @@ void init_environment(void){
   global_environment = setup_environment();
   
   /*Set up builtin procedures*/
-  define_variable(make_symbol("+"),
-                  make_primitive_proc(plus_proc),
-                  global_environment);
-  define_variable(make_symbol("-"),
-                  make_primitive_proc(minus_proc),
-                  global_environment);
-  define_variable(make_symbol("*"),
-                  make_primitive_proc(mult_proc),
-                  global_environment);
-  define_variable(make_symbol("/"),
-                  make_primitive_proc(div_proc),
-                  global_environment);
-  define_variable(make_symbol("mod"),
-                  make_primitive_proc(remainder_proc),
-                  global_environment);
-  define_variable(make_symbol("="),
-                  make_primitive_proc(num_equal_proc),
-                  global_environment);
-  define_variable(make_symbol("<"),
-                  make_primitive_proc(less_than_proc),
-                  global_environment);
-  define_variable(make_symbol(">"),
-                  make_primitive_proc(greater_than_proc),
-                  global_environment);
-  define_variable(make_symbol("null?"),
-                  make_primitive_proc(nullp_proc),
-                  global_environment);
-  define_variable(make_symbol("boolean?"),
-                  make_primitive_proc(booleanp_proc),
-                  global_environment);
-  define_variable(make_symbol("symbol?"),
-                  make_primitive_proc(symbolp_proc),
-                  global_environment);
-  define_variable(make_symbol("integer?"),
-                  make_primitive_proc(integerp_proc),
-                  global_environment);
-  define_variable(make_symbol("char?"),
-                  make_primitive_proc(characterp_proc),
-                  global_environment);
-  define_variable(make_symbol("pair?"),
-                  make_primitive_proc(pairp_proc),
-                  global_environment);
-  define_variable(make_symbol("procedure?"),
-                  make_primitive_proc(procedurep_proc),
-                  global_environment);
-  define_variable(make_symbol("cons"),
-                  make_primitive_proc(cons_proc),
-                  global_environment);
-  define_variable(make_symbol("car"),
-                  make_primitive_proc(car_proc),
-                  global_environment);
-  define_variable(make_symbol("cdr"),
-                  make_primitive_proc(cdr_proc),
-                  global_environment);
-  define_variable(make_symbol("list"),
-                  make_primitive_proc(list_proc),
-                  global_environment);
-  define_variable(make_symbol("set-car!"),
-                  make_primitive_proc(set_car_proc),
-                  global_environment);
-  define_variable(make_symbol("set-cdr!"),
-                  make_primitive_proc(set_cdr_proc),
-                  global_environment);
-  define_variable(make_symbol("char->int"),
-                  make_primitive_proc(char_to_int_proc),
-                  global_environment);
-  define_variable(make_symbol("int->char"),
-                  make_primitive_proc(int_to_char_proc),
-                  global_environment);
-  define_variable(make_symbol("int->string"),
-                  make_primitive_proc(int_to_string_proc),
-                  global_environment);
-  define_variable(make_symbol("string->int"),
-                  make_primitive_proc(string_to_int_proc),
-                  global_environment);
-  define_variable(make_symbol("string->symbol"),
-                  make_primitive_proc(string_to_symbol_proc),
-                  global_environment);
-  define_variable(make_symbol("symbol->string"),
-                  make_primitive_proc(symbol_to_string_proc),
-                  global_environment);
-  define_variable(make_symbol("global-env"), 
-                  make_primitive_proc(global_env_proc),
-                  global_environment);
+  builtin_proc(+, plus_proc);
+  builtin_proc(-, minus_proc);
+  builtin_proc(*, mult_proc);
+  builtin_proc(/, div_proc);
+  builtin_proc(mod, remainder_proc);
+  builtin_proc(=, num_equal_proc);
+  builtin_proc(<, less_than_proc);
+  builtin_proc(>, greater_than_proc);
+  builtin_proc(null?, nullp_proc);
+  builtin_proc(boolean?, booleanp_proc);
+  builtin_proc(symbol?, symbolp_proc);
+  builtin_proc(integer?, integerp_proc);
+  builtin_proc(char?, characterp_proc);
+  builtin_proc(pair?, pairp_proc);
+  builtin_proc(procedure?, procedurep_proc);
+  builtin_proc(cons, cons_proc);
+  builtin_proc(car, car_proc);
+  builtin_proc(cdr, cdr_proc);
+  builtin_proc(list, list_proc);
+  builtin_proc(set-car!, set_car_proc);
+  builtin_proc(set-cdr!, set_cdr_proc);
+  builtin_proc(char->int, char_to_int_proc);
+  builtin_proc(int->char, int_to_char_proc);
+  builtin_proc(int->string, int_to_string_proc);
+  builtin_proc(string->int, string_to_int_proc);
+  builtin_proc(string->symbol, string_to_symbol_proc);
+  builtin_proc(symbol->string, symbol_to_string_proc);
+  builtin_proc(global-env, global_env_proc);
 }
 
