@@ -1,4 +1,36 @@
 #include "eval.h"
+#include <setjmp.h>
+
+static int g_err_jmp_set = 0;
+static jmp_buf g_err_jmp;
+
+int set_err_jmp(){
+	g_err_jmp_set++;
+	printf("set_err_jmp - %d\n", g_err_jmp_set);
+	if(g_err_jmp_set == 1){
+		printf("setjmp\n");
+		return setjmp(g_err_jmp);
+	}
+	return 0;
+}
+
+void clear_err_jmp(){
+	printf("clear_err_jmp - %d\n", g_err_jmp_set);
+	g_err_jmp_set--;
+}
+
+void reset_err_jmp(){
+	g_err_jmp_set = 0;
+}
+
+int call_err(int err_code){
+	if(!g_err_jmp_set){
+		fprintf(stderr, "Error jump called when not set");
+	}else{
+		printf("longjmp\n");
+		longjmp(g_err_jmp, err_code);
+	}
+}
 
 char is_self_evaluating(object *exp){
   return is_boolean(exp)   ||
@@ -96,6 +128,7 @@ object *lookup_variable_value(object *var, object *env){
     env = enclosing_environment(env);
   }
   fprintf(stderr, "Unbound variable: %s\n", var->data.symbol.value);
+	call_err(1);
   exit(1);
 }
 
@@ -353,22 +386,32 @@ object* do_while(object *exp, object *env){
 object *scheme_eval(object *exp, object *env){
   object *procedure;
   object *args;
+
+	object* ret = 0;
+	switch(set_err_jmp()){
+	case 0:
+		break;
+	default:
+		printf("Error occurred\n");
+		reset_err_jmp();
+		return false;
+	}
 /*goto target for tail calls*/
 tailcall:
   if(is_self_evaluating(exp)){
-    return exp;
+    ret = exp;
   }else if(is_variable(exp)){
-    return lookup_variable_value(exp, env);
+    ret = lookup_variable_value(exp, env);
   }else if(is_quoted(exp)){
-    return quoted_contents(exp);
+    ret = quoted_contents(exp);
   }else if(is_assignment(exp)){
-    return eval_assignment(exp, env);
+    ret = eval_assignment(exp, env);
   }else if(is_definition(exp)){
-    return eval_definition(exp, env);
+    ret = eval_definition(exp, env);
   }else if(is_while(exp)){
-    return do_while(exp, env);
+    ret = do_while(exp, env);
   }else if(is_lambda(exp)){
-    return make_compound_proc(lambda_params(exp),
+    ret = make_compound_proc(lambda_params(exp),
                               lambda_body(exp),
                               env);
   }else if(is_begin(exp)){
@@ -392,7 +435,7 @@ tailcall:
     procedure = scheme_eval(proc_symbol(exp), env);
     args = list_of_values(proc_args(exp), env);
     if(is_primitive_proc(procedure)){
-      return (procedure->data.primitive_proc.fn)(args);
+      ret = (procedure->data.primitive_proc.fn)(args);
     }else if(is_compound_proc(procedure)){
       env = extend_environment(
               procedure->data.compound_proc.params,
@@ -408,6 +451,9 @@ tailcall:
     fprintf(stderr, "Cannot eval unknown expression type\n");
     exit(1);
   }
+
+	clear_err_jmp();
+	return ret;
   fprintf(stderr, "eval illegal state\n");
   exit(1);
 }
