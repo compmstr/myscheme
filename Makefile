@@ -6,8 +6,8 @@ CFLAGS=-ggdb
 #CFLAGS=-m32
 LIBS=-lgc
 
-myscheme: myscheme.c types.h reader.o types.o eval.o writer.o
-	$(CC) $(CFLAGS) $(LIBS) -Wall -ansi -o myscheme reader.o types.o writer.o eval.o myscheme.c
+myscheme: myscheme.c types.h reader.o types.o eval.o writer.o except.o
+	$(CC) $(CFLAGS) $(LIBS) -Wall -ansi -o myscheme reader.o types.o except.o writer.o eval.o myscheme.c
 
 reader.o: reader.h reader.c
 	$(CC) $(CFLAGS) -c reader.c
@@ -20,6 +20,9 @@ eval.o: eval.h eval.c
 
 types.o: types.c types.h
 	$(CC) $(CFLAGS) -c types.c
+
+except.o: except.c except.h
+	$(CC) $(CFLAGS) -c except.c
 
 clean:
 	rm *.o

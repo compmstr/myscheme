@@ -1,36 +1,5 @@
 #include "eval.h"
-#include <setjmp.h>
-
-static int g_err_jmp_set = 0;
-static jmp_buf g_err_jmp;
-
-int set_err_jmp(){
-	g_err_jmp_set++;
-	printf("set_err_jmp - %d\n", g_err_jmp_set);
-	if(g_err_jmp_set == 1){
-		printf("setjmp\n");
-		return setjmp(g_err_jmp);
-	}
-	return 0;
-}
-
-void clear_err_jmp(){
-	printf("clear_err_jmp - %d\n", g_err_jmp_set);
-	g_err_jmp_set--;
-}
-
-void reset_err_jmp(){
-	g_err_jmp_set = 0;
-}
-
-int call_err(int err_code){
-	if(!g_err_jmp_set){
-		fprintf(stderr, "Error jump called when not set");
-	}else{
-		printf("longjmp\n");
-		longjmp(g_err_jmp, err_code);
-	}
-}
+#include "except.h"
 
 char is_self_evaluating(object *exp){
   return is_boolean(exp)   ||
@@ -128,7 +97,6 @@ object *lookup_variable_value(object *var, object *env){
     env = enclosing_environment(env);
   }
   fprintf(stderr, "Unbound variable: %s\n", var->data.symbol.value);
-	call_err(1);
   exit(1);
 }
 
@@ -388,14 +356,6 @@ object *scheme_eval(object *exp, object *env){
   object *args;
 
 	object* ret = 0;
-	switch(set_err_jmp()){
-	case 0:
-		break;
-	default:
-		printf("Error occurred\n");
-		reset_err_jmp();
-		return false;
-	}
 /*goto target for tail calls*/
 tailcall:
   if(is_self_evaluating(exp)){
@@ -452,7 +412,10 @@ tailcall:
     exit(1);
   }
 
-	clear_err_jmp();
+	if(ret == 0){
+		printf("Error occured");
+	}
+
 	return ret;
   fprintf(stderr, "eval illegal state\n");
   exit(1);
