@@ -1,5 +1,19 @@
 #include "eval.h"
 #include "except.h"
+#include "types.h"
+
+object *quote_symbol;
+object *define_symbol;
+object *set_symbol;
+object *if_symbol;
+object *lambda_symbol;
+object *begin_symbol;
+object *let_symbol;
+object *while_symbol;
+
+object *empty_environment;
+object *global_environment;
+
 
 char is_self_evaluating(object *exp){
   return is_boolean(exp)   ||
@@ -43,7 +57,7 @@ object *if_then(object *exp){
 
 object *if_else(object *exp){
   if(is_empty_list(cadddr(exp))){
-    return false;
+    return scheme_false;
   }else{
     return cadddr(exp);
   }
@@ -226,18 +240,18 @@ object *eval_assignment(object *exp, object *env){
   set_variable_value(assignment_variable(exp),
                       scheme_eval(assignment_value(exp), env),
                       env);
-  return true;
+  return scheme_true;
 }
 
 object *eval_definition(object *exp, object *env){
   define_variable(definition_variable(exp),
                       scheme_eval(definition_value(exp), env),
                       env);
-  return true;
+  return scheme_true;
 }
 
-object *make_proc_call(object *operator, object *operands){
-  return cons(operator, operands);
+object *make_proc_call(object *proc, object *operands){
+  return cons(proc, operands);
 }
 
 char is_proc_call(object *exp){
@@ -485,12 +499,12 @@ object *num_equal_proc(object *args){
 
   while(!is_empty_list(args)){
     if(val != (car(args))->data.fixnum.value){
-      return false;
+      return scheme_false;
     }
     args = cdr(args);
   }
 
-  return true;
+  return scheme_true;
 }
 
 object *less_than_proc(object *args){
@@ -499,13 +513,13 @@ object *less_than_proc(object *args){
 
   while(!is_empty_list(args)){
     if(val > (car(args))->data.fixnum.value){
-      return false;
+      return scheme_false;
     }
     val = (car (args))->data.fixnum.value;
     args = cdr(args);
   }
 
-  return true;
+  return scheme_true;
 }
 
 object *greater_than_proc(object *args){
@@ -514,38 +528,38 @@ object *greater_than_proc(object *args){
 
   while(!is_empty_list(args)){
     if(val < (car(args))->data.fixnum.value){
-      return false;
+      return scheme_false;
     }
     val = (car (args))->data.fixnum.value;
     args = cdr(args);
   }
 
-  return true;
+  return scheme_true;
 }
 
 object *nullp_proc(object *args){
-  return is_empty_list(car(args)) ? true : false;
+  return is_empty_list(car(args)) ? scheme_true : scheme_false;
 }
 
 object *booleanp_proc(object *args){
-  return is_boolean(car(args)) ? true : false;
+  return is_boolean(car(args)) ? scheme_true : scheme_false;
 }
 object *symbolp_proc(object *args){
-  return is_symbol(car(args)) ? true : false;
+  return is_symbol(car(args)) ? scheme_true : scheme_false;
 }
 object *integerp_proc(object *args){
-  return is_fixnum(car(args)) ? true : false;
+  return is_fixnum(car(args)) ? scheme_true : scheme_false;
 }
 object *characterp_proc(object *args){
-  return is_character(car(args)) ? true : false;
+  return is_character(car(args)) ? scheme_true : scheme_false;
 }
 object *pairp_proc(object *args){
-  return is_pair(car(args)) ? true : false;
+  return is_pair(car(args)) ? scheme_true : scheme_false;
 }
 object *procedurep_proc(object *args){
   return (is_primitive_proc(car(args)) ||
           is_compound_proc(car(args)))
-          ? true : false;
+          ? scheme_true : scheme_false;
 }
 
 object *cons_proc(object *args){

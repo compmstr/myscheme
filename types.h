@@ -42,10 +42,10 @@ typedef struct object {
   } data;
 } object;
 
-object *true;
-object *false;
-object *empty_list;
-object *symbol_table;
+extern object *scheme_true;
+extern object *scheme_false;
+extern object *empty_list;
+extern object *symbol_table;
 
 object *car(object *obj);
 object *cdr(object *obj);
@@ -54,16 +54,18 @@ object *cons(object *car, object *cdr);
 char is_false(object *obj);
 char is_true(object *obj);
 
+char is_string(object *obj);
+
 /**
  *List of read functions for each type
  * these are initialized in init_types
  */
-object * (*read_funcs[NUM_TYPES])(FILE *in);
+extern object * (*read_funcs[NUM_TYPES])(FILE *in);
 /**
  *List of write functions for each type
  * these are initialized in init_types
  */
-void (*write_funcs[NUM_TYPES])(object *obj);
+extern void (*write_funcs[NUM_TYPES])(object *obj);
 
 /*Used to determine what type is coming next in the stream
  *Inputs:

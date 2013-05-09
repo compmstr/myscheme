@@ -1,4 +1,4 @@
-#ifndef _EVAL_H__
+#ifndef _EVAL_H_
 #define _EVAL_H_
 
 #include "types.h"
@@ -11,17 +11,17 @@
 #define caddr(obj) car(cdr(cdr(obj)))
 #define cadddr(obj) car(cdr(cdr(cdr(obj))))
 
-object *quote_symbol;
-object *define_symbol;
-object *set_symbol;
-object *if_symbol;
-object *lambda_symbol;
-object *begin_symbol;
-object *let_symbol;
-object *while_symbol;
+extern object *quote_symbol;
+extern object *define_symbol;
+extern object *set_symbol;
+extern object *if_symbol;
+extern object *lambda_symbol;
+extern object *begin_symbol;
+extern object *let_symbol;
+extern object *while_symbol;
 
-object *empty_environment;
-object *global_environment;
+extern object *empty_environment;
+extern object *global_environment;
 
 object *scheme_eval(object *exp, object *env);
 void init_environment(void);

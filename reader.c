@@ -51,7 +51,7 @@ void eat_whitespace(FILE *in){
   }
 }
 //Eats only the expected string, exits if that string isn't there
-void eat_expected_string(FILE *in, char *str){
+void eat_expected_string(FILE *in, const char *str){
   int c;
   while(*str != '\0'){
     c = getc(in);

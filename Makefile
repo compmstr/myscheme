@@ -1,5 +1,6 @@
 .PHONY: clean
-CC=gcc
+#CC=gcc
+CC=g++
 #Don't really need 64 bit for this thing
 #CFLAGS=-m32 -ggdb
 CFLAGS=-ggdb

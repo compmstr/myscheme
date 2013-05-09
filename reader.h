@@ -1,4 +1,4 @@
-#ifndef _READER_H__
+#ifndef _READER_H_
 #define _READER_H_
 
 #include <stdio.h>
@@ -15,7 +15,7 @@ int peek(FILE *in);
 /*Eats up to a non-whitespace, passes through comments*/
 void eat_whitespace(FILE *in);
 /*Eats only the expected string, exits if that string isn't there*/
-void eat_expected_string(FILE *in, char *str);
+void eat_expected_string(FILE *in, const char *str);
 /*Makes sure a delimiter is next in the file, exits if not*/
 void peek_expected_delimiter(FILE *in);
 

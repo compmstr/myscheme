@@ -1,6 +1,24 @@
 #include "types.h"
 #include "reader.h"
+#include "writer.h"
 #include <gc/gc.h>
+
+object *scheme_true;
+object *scheme_false;
+object *empty_list;
+object *symbol_table;
+
+/**
+ *List of read functions for each type
+ * these are initialized in init_types
+ */
+object * (*read_funcs[NUM_TYPES])(FILE *in);
+/**
+ *List of write functions for each type
+ * these are initialized in init_types
+ */
+void (*write_funcs[NUM_TYPES])(object *obj);
+
 
 const int STRING_BUFFER_LEN = 1024;
 
@@ -8,7 +26,7 @@ object *alloc_object(void){
   object *obj;
 
   /*obj = malloc(sizeof(object));*/
-  obj = GC_MALLOC(sizeof(object));
+  obj = (object *)GC_MALLOC(sizeof(object));
   if(obj == NULL){
     fprintf(stderr, "out of memory\n");
     exit(1);
@@ -71,7 +89,7 @@ object_type next_type(FILE *in, char c){
 }
 
 char is_false(object *obj){
-  return obj == false;
+  return obj == scheme_false;
 }
 
 char is_true(object *obj){
@@ -91,9 +109,9 @@ void write_boolean(object *obj){
 object *read_boolean(FILE *in){
   int c = getc(in);
   if(c == 't'){
-    return true;
+    return scheme_true;
   }else if(c == 'f'){
-    return false;
+    return scheme_false;
   }else{
     fprintf(stderr, "Invalid boolean, expected [t|f], got %c\n", c);
     exit(1);
@@ -202,7 +220,7 @@ object *make_string(const char *value){
   obj = alloc_object();
   obj->type = STRING;
   /*obj->data.string.value = malloc(strlen(value) + 1);*/
-  obj->data.string.value = GC_MALLOC(strlen(value) + 1);
+  obj->data.string.value = (char *)GC_MALLOC(strlen(value) + 1);
   if(obj->data.string.value == NULL){
     fprintf(stderr, "out of memory\n");
     exit(1);
@@ -391,7 +409,7 @@ object *make_symbol(const char *value){
   /*create the symbol and add it to the symbol table*/
   obj = alloc_object();
   obj->type = SYMBOL;
-  obj->data.symbol.value = GC_MALLOC(strlen(value) + 1);
+  obj->data.symbol.value = (char *)GC_MALLOC(strlen(value) + 1);
   /*obj->data.symbol.value = malloc(strlen(value) + 1);*/
   if(obj->data.symbol.value == NULL){
     fprintf(stderr, "out of memory\n");
@@ -477,13 +495,13 @@ void write_compound_proc(object *obj){
 //Initialization
 void init_types(void){
   printf("Initializing types...\n");
-  false = alloc_object();
-  false->type = BOOLEAN;
-  false->data.boolean.value = 0;
+  scheme_false = alloc_object();
+  scheme_false->type = BOOLEAN;
+  scheme_false->data.boolean.value = 0;
 
-  true = alloc_object();
-  true->type = BOOLEAN;
-  true->data.boolean.value = 1;
+  scheme_true = alloc_object();
+  scheme_true->type = BOOLEAN;
+  scheme_true->data.boolean.value = 1;
 
   empty_list = alloc_object();
   empty_list->type = EMPTY_LIST;
